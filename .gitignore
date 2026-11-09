@@ -46,3 +46,4 @@ Task.txt
 /src/generated/
 /.local-pg/
 !.env.example
+/submission/

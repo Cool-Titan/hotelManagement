@@ -1,6 +1,7 @@
 # Deployment — Kaapi Estate direct booking & enquiry inbox
 
 Repository: https://github.com/Cool-Titan/hotelManagement
+Live app: https://hotelmanagement-pi-three.vercel.app
 
 ## Demo logins
 
