@@ -38,7 +38,7 @@ export async function createEnquiry(input: NewEnquiry) {
   return enquiry;
 }
 
-async function ownerFor(category: EnquiryCategory | "UNSORTED"): Promise<string | null> {
+export async function ownerFor(category: EnquiryCategory | "UNSORTED"): Promise<string | null> {
   if (category === "UNSORTED" || category === "OTHER" || category === "COMPLAINT") {
     const gm = await prisma.user.findFirst({ where: { role: "GM" }, select: { id: true } });
     if (category !== "COMPLAINT") return gm?.id ?? null;
@@ -49,7 +49,7 @@ async function ownerFor(category: EnquiryCategory | "UNSORTED"): Promise<string 
   return rule?.assigneeId ?? null;
 }
 
-function signOff(draft: string, name: string | undefined) {
+export function signOff(draft: string, name: string | undefined) {
   const team = "Reservations & Events, Kaapi Estate";
   return draft.replace(/Warm regards,?\s*$/i, "").trim() + `\n\nWarm regards,\n${name ? `${name}\n` : ""}${team}`;
 }
