@@ -20,7 +20,8 @@ export default defineConfig({
       ...fromFile,
       DATABASE_URL: testUrl,
       DIRECT_URL: testUrl,
-      XAI_API_KEY: "", // tests never call the real AI
+      XAI_API_KEY: "", // tests never call a real AI
+      GEMINI_API_KEY: "",
     },
     include: ["tests/**/*.test.ts"],
     fileParallelism: false, // DB tests share one database

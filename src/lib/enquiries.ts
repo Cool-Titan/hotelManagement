@@ -7,7 +7,7 @@ import { prisma } from "./db";
 import { todayIST } from "./dates";
 import { randomReference } from "./ids";
 import { triage } from "./ai/triage";
-import { callGrok, grokConfigured } from "./ai/grok";
+import { modelCall } from "./ai/llm";
 import { buildQuoteBlock, insertQuote } from "./ai/quote";
 import type { Extracted } from "./ai/extract";
 
@@ -60,7 +60,7 @@ export function signOff(draft: string, name: string | undefined) {
  */
 export async function routeEnquiry(id: string, opts: { useAi?: boolean } = {}) {
   const enquiry = await prisma.enquiry.findUniqueOrThrow({ where: { id } });
-  const useAi = (opts.useAi ?? true) && grokConfigured();
+  const call = (opts.useAi ?? true) ? modelCall() : null;
   const result = await triage(
     {
       message: enquiry.message,
@@ -69,7 +69,7 @@ export async function routeEnquiry(id: string, opts: { useAi?: boolean } = {}) {
       channel: enquiry.channel,
       formData: enquiry.formData as Record<string, unknown> | null,
     },
-    { callModel: useAi ? callGrok : null, today: todayIST() },
+    { callModel: call, today: todayIST() },
   );
 
   const warnings = [...result.warnings];

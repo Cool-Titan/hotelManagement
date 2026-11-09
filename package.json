@@ -15,7 +15,8 @@
     "db:seed": "tsx --conditions=react-server prisma/seed.ts",
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
-    "db:test-migrate": "node scripts/migrate-test-db.mjs"
+    "db:test-migrate": "node scripts/migrate-test-db.mjs",
+    "ai:retry": "tsx --conditions=react-server scripts/reroute-fallback.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

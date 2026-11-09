@@ -21,23 +21,24 @@ export async function buildQuoteBlock(ex: Extracted): Promise<{ block: string; n
   ]);
   if (!plan) return { block: "", note: "No active rate plan; no prices added." };
 
-  const adults = ex.adults ?? (ex.guests && ex.guests <= 4 ? ex.guests : 2);
+  const adults = ex.adults ?? ex.guests ?? 2;
   const children = ex.children ?? 0;
-  const fitting = types.filter(
-    (t) =>
-      adults <= t.maxAdults &&
-      children <= t.maxChildren &&
-      adults + children <= t.maxGuests &&
-      (!ex.roomPreference || t.category === ex.roomPreference),
-  );
+  const candidates = types.filter((t) => !ex.roomPreference || t.category === ex.roomPreference);
 
   const lines: string[] = [];
-  for (const t of fitting) {
+  for (const t of candidates) {
+    const rooms = roomsNeeded(t, adults, children);
+    if (rooms === null) continue; // too big a group to quote from the website allotment
     const a = avail.get(t.id);
-    if (!a || a.available < 1) continue;
+    if (!a || a.available < rooms) continue;
     const q = await quoteStay(t.id, plan.id, checkIn, checkOut);
     if (!q) continue;
-    lines.push(`• ${t.name}: ${formatINR(q.grandTotal)} for ${q.nights} night${q.nights > 1 ? "s" : ""}, incl. GST`);
+    const nights = `${q.nights} night${q.nights > 1 ? "s" : ""}`;
+    lines.push(
+      rooms === 1
+        ? `• ${t.name}: ${formatINR(q.grandTotal)} for ${nights}, incl. GST`
+        : `• ${rooms} × ${t.name}: ${formatINR(q.grandTotal * rooms)} for ${nights}, incl. GST (${formatINR(q.grandTotal)} per room)`,
+    );
   }
   const header = `${formatRange(checkIn, checkOut)} · ${adults} adult${adults > 1 ? "s" : ""}${children ? `, ${children} child${children > 1 ? "ren" : ""}` : ""} · ${plan.name}`;
   if (lines.length === 0) {
@@ -50,12 +51,32 @@ export async function buildQuoteBlock(ex: Extracted): Promise<{ block: string; n
   return { block: [header, ...lines].join("\n") };
 }
 
+/** Rooms of this type a party needs (null if more than a website group of 4 rooms). */
+export function roomsNeeded(
+  t: { maxAdults: number; maxChildren: number; maxGuests: number },
+  adults: number,
+  children: number,
+): number | null {
+  const byAdults = Math.ceil(adults / t.maxAdults);
+  const byChildren = children === 0 ? 0 : t.maxChildren === 0 ? Infinity : Math.ceil(children / t.maxChildren);
+  const byTotal = Math.ceil((adults + children) / t.maxGuests);
+  const n = Math.max(1, byAdults, byChildren, byTotal);
+  return n <= 4 ? n : null;
+}
+
+const tidy = (s: string) =>
+  s
+    .split(/\n{2,}/)
+    .map((p) => p.split("\n").map((l) => l.trim()).join("\n").trim())
+    .filter(Boolean)
+    .join("\n\n");
+
 /** Puts the quote where the AI left [[QUOTE]] (or after the first paragraph). */
 export function insertQuote(draft: string, block: string): string {
   if (draft.includes("[[QUOTE]]")) {
-    return draft.replace(/\n*\[\[QUOTE\]\]\n*/g, block ? `\n\n${block}\n\n` : "\n\n").trim();
+    return tidy(draft.replace(/\s*\[\[QUOTE\]\]\s*/g, block ? `\n\n${block}\n\n` : "\n\n"));
   }
-  if (!block) return draft.trim();
-  const [first, ...rest] = draft.split(/\n\n/);
-  return [first, block, ...rest].join("\n\n").trim();
+  if (!block) return tidy(draft);
+  const [first, ...rest] = tidy(draft).split(/\n\n/);
+  return [first, block, ...rest].join("\n\n");
 }

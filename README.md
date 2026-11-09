@@ -15,7 +15,7 @@ A direct-booking website and staff desk for a 76-key coffee-estate resort in Chi
 - PostgreSQL + Prisma 6
 - jose (JWT sessions)
 - zod
-- xAI Grok (structured outputs)
+- Google Gemini (JSON-schema structured output); xAI Grok also supported
 - Vitest
 
 ## Where things are
@@ -25,7 +25,7 @@ A direct-booking website and staff desk for a 76-key coffee-estate resort in Chi
 | `src/lib/inventory.ts` | Allotment control: atomic holds, confirm, release, expiry (the "never overbook" logic) |
 | `prisma/migrations/*/migration.sql` | Schema, plus the `CHECK (sold + held <= allotment)` backstop |
 | `src/lib/pricing.ts` | Rate plans, promos, GST slabs. Prices bookings *and* AI drafts |
-| `src/lib/ai/` | Triage: Grok call, keyword fallback, extraction, price stripping, quote insertion |
+| `src/lib/ai/` | Triage: Gemini/Grok clients, keyword fallback, extraction, price stripping, quote insertion |
 | `src/lib/enquiries.ts` | Intake and routing for every channel |
 | `src/app/(site)/` | Guest site |
 | `src/app/admin/` | Staff desk |
@@ -36,6 +36,6 @@ A direct-booking website and staff desk for a 76-key coffee-estate resort in Chi
 
 ## Scripts
 
-`dev`, `build`, `test`, `typecheck`, `lint`, `db:local`, `db:migrate`, `db:seed`.
+`dev`, `build`, `test`, `typecheck`, `lint`, `db:local`, `db:migrate`, `db:seed`, `db:test-migrate`, `ai:retry`.
 
 Photos are free-licence (Unsplash/Pexels) stand-ins, credited at `/credits`.
