@@ -94,7 +94,7 @@ export default async function InboxPage(props: PageProps<"/admin/inbox">) {
           </p>
           <ul className="mt-2 space-y-1 text-sm">
             {alerts.slice(0, 5).map((a) => (
-              <li key={a.id}>
+              <li key={a.id} className="line-clamp-2">
                 <Link href={`/admin/inbox/${a.id}`} className="underline decoration-cherry/40 hover:decoration-cherry">
                   {a.fromName}
                 </Link>{" "}

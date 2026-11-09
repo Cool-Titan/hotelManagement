@@ -218,7 +218,7 @@ export async function triage(input: TriageInput, deps: { callModel?: ModelCall |
       confidence: keywords.confidence,
       classifiedBy: "fallback",
       model: null,
-      summary: text.replace(/\s+/g, " ").slice(0, 140),
+      summary: clip(text.replace(/\s+/g, " "), 140),
       urgency: keywords.complaintSignal ? "high" : "normal",
       extracted: ruleExtract,
       missingInfo: [],
@@ -262,4 +262,11 @@ export async function triage(input: TriageInput, deps: { callModel?: ModelCall |
     warnings,
     gmAlert,
   };
+}
+
+/** Shortens to a word boundary with an ellipsis. */
+export function clip(s: string, max: number): string {
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max - 1);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), max * 0.6))}…`;
 }

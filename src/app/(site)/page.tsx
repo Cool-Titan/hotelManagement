@@ -24,7 +24,7 @@ export default async function Home(props: PageProps<"/">) {
 
   return (
     <>
-      <section className="relative isolate flex min-h-[78svh] flex-col justify-end md:min-h-[86svh]">
+      <section className="relative isolate flex min-h-[78svh] flex-col justify-end pt-24 md:min-h-[86svh]">
         <SiteHeader overlay />
         <Photo src="/images/hero.jpg" alt="Mist over the coffee-covered hills of Chikkamagaluru" fill priority sizes="100vw" className="-z-10 object-cover" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/45 via-black/10 to-black/55" />
