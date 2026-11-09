@@ -1,0 +1,275 @@
+// Data model for the direct-booking site and the enquiry inbox.
+// Money is stored as whole rupees (Int). Dates for stays are stored as
+// @db.Date (no time zone) — a "night" is identified by its calendar date.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  GUEST
+  STAFF
+  GM
+}
+
+enum Team {
+  RESERVATIONS
+  EVENTS
+  SALES
+  MANAGEMENT
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  phone        String?
+  passwordHash String
+  role         Role      @default(GUEST)
+  team         Team?
+  createdAt    DateTime  @default(now())
+  bookings     Booking[]
+  assigned     Enquiry[] @relation("assignee")
+  events       EnquiryEvent[]
+}
+
+enum RoomCategory {
+  ROOM
+  SUITE
+  VILLA
+}
+
+model RoomType {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        String
+  tagline     String
+  description String
+  category    RoomCategory
+  sizeSqm     Int
+  bed         String
+  view        String
+  maxAdults   Int
+  maxChildren Int
+  maxGuests   Int
+  amenities   String[]
+  images      String[]
+  totalUnits  Int // physical keys of this type (allotment can never exceed it)
+  baseRate    Int // default room-only nightly rate in ₹, used when generating inventory
+  sortOrder   Int            @default(0)
+  inventory   InventoryDay[]
+  bookings    Booking[]
+  blackouts   BlackoutDate[]
+}
+
+// Rate plans are layered on top of the nightly room-only rate.
+model RatePlan {
+  id                String    @id @default(cuid())
+  code              String    @unique
+  name              String
+  description       String
+  inclusions        String[]
+  supplementPerNight Int      @default(0) // ₹ added per night (e.g. meals)
+  discountPct       Int       @default(0) // % off the room rate (e.g. advance purchase)
+  refundable        Boolean   @default(true)
+  cancellationPolicy String
+  minNights         Int       @default(1)
+  active            Boolean   @default(true)
+  sortOrder         Int       @default(0)
+  bookings          Booking[]
+}
+
+// One row per room type per night. This is the single source of truth for
+// what the website is allowed to sell. Invariant: sold + held <= allotment.
+model InventoryDay {
+  id         String   @id @default(cuid())
+  roomTypeId String
+  date       DateTime @db.Date
+  rate       Int // room-only nightly rate in ₹
+  allotment  Int // rooms the website may sell for this night (admin-set)
+  sold       Int      @default(0)
+  held       Int      @default(0) // rooms reserved by checkouts awaiting payment
+  stopSell   Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([roomTypeId, date])
+  @@index([date])
+}
+
+// A blackout closes the website for a date range — whole property when
+// roomTypeId is null (e.g. a wedding buy-out), otherwise one room type.
+model BlackoutDate {
+  id         String    @id @default(cuid())
+  startDate  DateTime  @db.Date
+  endDate    DateTime  @db.Date // inclusive last blacked-out night
+  reason     String
+  roomTypeId String?
+  roomType   RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+}
+
+enum DiscountType {
+  PERCENT
+  FLAT
+}
+
+model PromoCode {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  description    String
+  type           DiscountType
+  value          Int // percent (1-50) or flat ₹ per stay
+  minNights      Int          @default(1)
+  validFrom      DateTime     @db.Date // first stay night it applies to
+  validTo        DateTime     @db.Date // last stay night it applies to
+  maxRedemptions Int?
+  redemptions    Int          @default(0) // counted while a booking holds or uses it
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  bookings       Booking[]
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  PAYMENT_FAILED
+  EXPIRED
+  CANCELLED
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  reference       String        @unique
+  status          BookingStatus @default(PENDING_PAYMENT)
+  userId          String
+  roomTypeId      String
+  ratePlanId      String
+  promoCodeId     String?
+  checkIn         DateTime      @db.Date
+  checkOut        DateTime      @db.Date
+  nights          Int
+  adults          Int
+  children        Int
+  guestName       String
+  guestEmail      String
+  guestPhone      String
+  guestCountry    String
+  specialRequests String?
+  // Price snapshot taken when the hold is placed; never recomputed later.
+  roomTotal       Int
+  discountTotal   Int
+  taxTotal        Int
+  grandTotal      Int
+  priceLines      Json // per-night breakdown incl. GST slab
+  holdExpiresAt   DateTime?
+  paymentRef      String?
+  paidAt          DateTime?
+  consentAt       DateTime // DPDP: consent to process data for this booking
+  source          String        @default("WEBSITE")
+  exportedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id])
+  roomType        RoomType      @relation(fields: [roomTypeId], references: [id])
+  ratePlan        RatePlan      @relation(fields: [ratePlanId], references: [id])
+  promoCode       PromoCode?    @relation(fields: [promoCodeId], references: [id])
+
+  @@index([status, holdExpiresAt])
+  @@index([checkIn])
+  @@index([createdAt])
+}
+
+enum Channel {
+  WEB_FORM
+  EVENT_FORM
+  EMAIL
+  WHATSAPP
+}
+
+enum EnquiryCategory {
+  ROOM
+  WEDDING
+  OFFSITE
+  COMPLAINT
+  OTHER
+}
+
+enum Lane {
+  PENDING // waiting for the classifier
+  ROOM
+  WEDDING
+  OFFSITE
+  COMPLAINT
+  UNSORTED // low confidence or AI unavailable — the GM sees this lane
+}
+
+enum EnquiryStatus {
+  OPEN
+  REPLIED
+  CLOSED
+}
+
+model Enquiry {
+  id             String           @id @default(cuid())
+  reference      String           @unique
+  channel        Channel
+  fromName       String
+  fromContact    String // email address or phone number
+  subject        String?
+  message        String
+  formData       Json? // structured fields from the wedding/event form
+  receivedAt     DateTime         @default(now())
+  status         EnquiryStatus    @default(OPEN)
+  lane           Lane             @default(PENDING)
+  category       EnquiryCategory? // best guess (AI or fallback); staff can override
+  confidence     Float?
+  classifiedBy   String? // "ai" | "fallback" | "staff"
+  aiModel        String?
+  summary        String?
+  extracted      Json? // { checkIn, checkOut, dateText, nights, adults, children, guests, budgetInr, ... }
+  urgency        String? // "low" | "normal" | "high"
+  draftReply     String?
+  draftWarnings  String[]
+  draftEdited    Boolean          @default(false)
+  replyBody      String?
+  repliedAt      DateTime?
+  firstReplyMins Int?
+  gmAlert        Boolean          @default(false)
+  gmAlertAckAt   DateTime?
+  assigneeId     String?
+  assignee       User?            @relation("assignee", fields: [assigneeId], references: [id])
+  events         EnquiryEvent[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([lane, status])
+  @@index([receivedAt])
+}
+
+// Audit trail of everything that happened to an enquiry.
+model EnquiryEvent {
+  id        String   @id @default(cuid())
+  enquiryId String
+  type      String // RECEIVED | CLASSIFIED | CLASSIFY_FAILED | REROUTED | ASSIGNED | DRAFT_EDITED | REPLIED | GM_ALERT | GM_ACK | CLOSED
+  actorId   String?
+  data      Json?
+  createdAt DateTime @default(now())
+  enquiry   Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  actor     User?    @relation(fields: [actorId], references: [id])
+
+  @@index([enquiryId, createdAt])
+}
+
+// Which team member owns each category. Kept as data so the GM can change it
+// without a deploy.
+model RoutingRule {
+  category   EnquiryCategory @id
+  assigneeId String
+}

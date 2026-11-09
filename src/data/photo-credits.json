@@ -1,0 +1,13 @@
+[
+  {"slot":"hero","file":"hero.jpg","source":"Unsplash","photographer":"Sarang Pande","pageUrl":"https://unsplash.com/photos/green-mountain-ranges-under-a-cloudy-sky-eyNsCCb4RBc"},
+  {"slot":"estate-2","file":"estate-2.jpg","source":"Unsplash","photographer":"Quang Nguyen Vinh","pageUrl":"https://unsplash.com/photos/xbyUjteHOd0"},
+  {"slot":"room-plantation","file":"room-plantation.jpg","source":"Unsplash","photographer":"Andrew Neel","pageUrl":"https://unsplash.com/photos/vacant-white-bed-near-the-window-B4rEJ09-Puo"},
+  {"slot":"room-plantation-2","file":"room-plantation-2.jpg","source":"Unsplash","photographer":"sidath vimukthi","pageUrl":"https://unsplash.com/photos/a-bedroom-with-a-view-of-the-mountains-outside-the-window-qSB35JVPe0s"},
+  {"slot":"suite","file":"suite.jpg","source":"Pexels","photographer":"Moussa Idrissi","pageUrl":"https://www.pexels.com/photo/luxury-hotel-room-with-modern-interior-design-34672504/"},
+  {"slot":"suite-2","file":"suite-2.jpg","source":"Unsplash","photographer":"Soumendra Kumar Sahoo","pageUrl":"https://unsplash.com/photos/a-couple-of-chairs-sitting-on-top-of-a-balcony-C-m7ARhFmE0"},
+  {"slot":"villa","file":"villa.jpg","source":"Unsplash","photographer":"Datingscout","pageUrl":"https://unsplash.com/photos/a-patio-with-a-pool-surrounded-by-greenery-YJX21A8t5J4"},
+  {"slot":"villa-2","file":"villa-2.jpg","source":"Pexels","photographer":"Maria Orlova","pageUrl":"https://www.pexels.com/photo/interior-of-typical-villa-located-in-lush-tropical-garden-4917176/"},
+  {"slot":"wedding","file":"wedding.jpg","source":"Unsplash","photographer":"Thomas Beaman","pageUrl":"https://unsplash.com/photos/FHrS96odM8E"},
+  {"slot":"offsite","file":"offsite.jpg","source":"Unsplash","photographer":"Maria Pozniak","pageUrl":"https://unsplash.com/photos/workspace-with-tables-and-sunlit-windows-wI20dSd0E7o"},
+  {"slot":"dining","file":"dining.jpg","source":"Unsplash","photographer":"Reggi Renaldi","pageUrl":"https://unsplash.com/photos/UPsGFEepasY"}
+]
