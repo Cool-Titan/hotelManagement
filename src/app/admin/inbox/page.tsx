@@ -4,7 +4,7 @@ import type { Lane, Prisma } from "@prisma/client";
 import { BellRing, Inbox as InboxIcon } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { requireStaff } from "@/lib/auth";
-import { timeAgo } from "@/lib/dates";
+import { daysAgo, timeAgo } from "@/lib/dates";
 import { ChannelTag, ConfidenceMeter, LANE_LABEL, LaneBadge } from "@/components/admin/badges";
 import { AutoRefresh } from "@/components/admin/AutoRefresh";
 import { SimulateInbound } from "./SimulateInbound";
@@ -44,7 +44,7 @@ export default async function InboxPage(props: PageProps<"/admin/inbox">) {
     ...(tab.key === "mine" ? { assigneeId: user.id } : {}),
   };
 
-  const weekAgo = new Date(Date.now() - 7 * 86_400_000);
+  const weekAgo = daysAgo(7);
   const [items, laneCounts, mineCount, replied, alerts, pending] = await Promise.all([
     prisma.enquiry.findMany({
       where,

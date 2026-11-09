@@ -198,7 +198,7 @@ export default async function EnquiryPage(props: PageProps<"/admin/inbox/[id]">)
                   </form>
                 ))}
               </div>
-              <form action={assignEnquiry.bind(null, e.id)} className="mt-4 flex flex-wrap items-end gap-2">
+              <form key={e.assigneeId ?? "none"} action={assignEnquiry.bind(null, e.id)} className="mt-4 flex flex-wrap items-end gap-2">
                 <label className="min-w-0 flex-1">
                   <span className="text-[12px] font-medium text-ink-2">Owner</span>
                   <select name="assigneeId" defaultValue={e.assigneeId ?? ""} className="input mt-1 h-9 text-sm">

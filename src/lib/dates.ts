@@ -55,8 +55,13 @@ export function formatShort(d: Date): string {
 export function formatLong(d: Date): string {
   return fmtLong.format(d);
 }
+const fmtDay = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+
+/** "Sat 14 Nov – Mon 16 Nov 2026" */
 export function formatRange(a: Date, b: Date): string {
-  return `${formatShort(a)} – ${formatLong(b)}`;
+  const sameYear = a.getUTCFullYear() === b.getUTCFullYear();
+  const left = fmtDay.format(a).replace(",", "") + (sameYear ? "" : ` ${a.getUTCFullYear()}`);
+  return `${left} – ${fmtDay.format(b).replace(",", "")} ${b.getUTCFullYear()}`;
 }
 
 export function formatDateTime(d: Date): string {
@@ -76,4 +81,9 @@ export function timeAgo(d: Date, now: Date = new Date()): string {
   const hrs = Math.round(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.round(hrs / 24)}d ago`;
+}
+
+/** Now minus n days (server-side helper). */
+export function daysAgo(n: number, now: Date = new Date()): Date {
+  return new Date(now.getTime() - n * DAY_MS);
 }

@@ -38,7 +38,7 @@ export function BookingForm({
         ))}
         <label className="min-w-0 flex-1">
           <span className="label">Promo code</span>
-          <input className="input uppercase" name="promo" defaultValue={promo.value} placeholder="e.g. DIRECT10" maxLength={20} autoComplete="off" />
+          <input className="input uppercase placeholder:normal-case" name="promo" defaultValue={promo.value} placeholder="e.g. DIRECT10" maxLength={20} autoComplete="off" />
         </label>
         <button className="btn-secondary">Apply</button>
         {promo.message && (
