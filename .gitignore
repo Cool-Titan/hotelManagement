@@ -45,3 +45,4 @@ Task.txt
 .env.test
 /src/generated/
 /.local-pg/
+!.env.example
