@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kaapi Estate — direct booking & enquiry inbox
 
-## Getting Started
+A direct-booking website and staff desk for a 76-key coffee-estate resort in Chikkamagaluru:
 
-First, run the development server:
+- **Guests** pick dates, see real prices including GST, and pay (test mode) in three steps.
+- **Reservations staff** control daily rates, the website allotment, blackout dates and promo codes, and export each day's bookings for the reservation system.
+- **One inbox** collects web-form, event-form, forwarded-email and WhatsApp enquiries (the last two simulated). An AI router classifies each one, extracts dates, guests and budget, assigns an owner and drafts a reply. Staff review every draft, and the GM sees anything the AI is unsure about.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Run it:** see [`deployment.md`](deployment.md). Demo logins are in there too.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Next.js 16 (App Router, server actions) + React 19 + TypeScript
+- Tailwind CSS 4
+- PostgreSQL + Prisma 6
+- jose (JWT sessions)
+- zod
+- xAI Grok (structured outputs)
+- Vitest
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Where things are
 
-## Learn More
+| Path | What |
+|---|---|
+| `src/lib/inventory.ts` | Allotment control: atomic holds, confirm, release, expiry (the "never overbook" logic) |
+| `prisma/migrations/*/migration.sql` | Schema, plus the `CHECK (sold + held <= allotment)` backstop |
+| `src/lib/pricing.ts` | Rate plans, promos, GST slabs. Prices bookings *and* AI drafts |
+| `src/lib/ai/` | Triage: Grok call, keyword fallback, extraction, price stripping, quote insertion |
+| `src/lib/enquiries.ts` | Intake and routing for every channel |
+| `src/app/(site)/` | Guest site |
+| `src/app/admin/` | Staff desk |
+| `src/app/actions/` | Server actions. Each one validates its input with zod and re-checks the user's role |
+| `src/proxy.ts`, `src/lib/auth.ts` | Access control |
+| `tests/` | Unit and Postgres integration tests |
+| `prisma/seed.ts` | Sample data, including enquiries ENQ-4410/4411/4412 from the brief |
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`dev`, `build`, `test`, `typecheck`, `lint`, `db:local`, `db:migrate`, `db:seed`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Photos are free-licence (Unsplash/Pexels) stand-ins, credited at `/credits`.

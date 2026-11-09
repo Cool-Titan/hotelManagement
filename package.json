@@ -13,7 +13,9 @@
     "db:local": "node scripts/local-db.mjs",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx --conditions=react-server prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "db:test-migrate": "node scripts/migrate-test-db.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
