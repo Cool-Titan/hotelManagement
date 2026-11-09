@@ -23,8 +23,8 @@ import { addDays, nightsBetween, parseIsoDate, toIsoDate } from "./dates";
 import { priceStay, promoProblem, type Quote } from "./pricing";
 import { randomReference } from "./ids";
 
-export const HOLD_MINUTES = 15;
-export const MAX_NIGHTS = 14;
+import { HOLD_MINUTES, MAX_NIGHTS } from "./stay-limits";
+export { HOLD_MINUTES, MAX_NIGHTS };
 
 export class BookingError extends Error {
   constructor(

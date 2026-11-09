@@ -180,13 +180,13 @@ async function main() {
     ],
   });
 
-  const plans = [];
+  const plans: Awaited<ReturnType<typeof prisma.ratePlan.create>>[] = [];
   for (const p of RATE_PLANS) plans.push(await prisma.ratePlan.create({ data: p }));
 
   // Inventory: 30 days back (for past bookings) to 240 days ahead.
   const start = addDays(today, -30);
   const DAYS = 270;
-  const types = [];
+  const types: (Awaited<ReturnType<typeof prisma.roomType.create>> & { allotment: number })[] = [];
   for (const t of ROOM_TYPES) {
     const { allotment, ...data } = t;
     const rt = await prisma.roomType.create({ data });
@@ -275,10 +275,10 @@ async function main() {
     const createdDaysAgo = Math.max(0, Math.min(30, -inOffset + 5 + Math.floor(rand() * 20)));
     if (await book({ typeIdx, inOffset, nights, userId: u.id, name, createdDaysAgo, status: rand() < 0.06 ? "CANCELLED" : "CONFIRMED" })) made++;
   }
-  // Make the coming weekend tight: villas sold out, suites down to the last one.
+  // Make the weekend after next tight: villas sold out, suites down to the last one.
   const daysToFri = (5 - today.getUTCDay() + 7) % 7 || 7;
-  for (let k = 0; k < 4; k++) await book({ typeIdx: 2, inOffset: daysToFri, nights: 2, userId: pick(otherGuests).id, name: `${pick(FIRST)} ${pick(LAST)}`, createdDaysAgo: 3 + k });
-  for (let k = 0; k < 5; k++) await book({ typeIdx: 1, inOffset: daysToFri, nights: 2, userId: pick(otherGuests).id, name: `${pick(FIRST)} ${pick(LAST)}`, createdDaysAgo: 2 + k });
+  for (let k = 0; k < 4; k++) await book({ typeIdx: 2, inOffset: daysToFri + 7, nights: 2, userId: pick(otherGuests).id, name: `${pick(FIRST)} ${pick(LAST)}`, createdDaysAgo: 3 + k });
+  for (let k = 0; k < 5; k++) await book({ typeIdx: 1, inOffset: daysToFri + 7, nights: 2, userId: pick(otherGuests).id, name: `${pick(FIRST)} ${pick(LAST)}`, createdDaysAgo: 2 + k });
   // The demo guest has an upcoming trip and a past one.
   await book({ typeIdx: 1, inOffset: 18, nights: 3, userId: guest.id, name: guest.name, createdDaysAgo: 6 });
   await book({ typeIdx: 0, inOffset: -20, nights: 2, userId: guest.id, name: guest.name, createdDaysAgo: 29 });
