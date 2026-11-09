@@ -12,7 +12,7 @@ const RULES: Record<Exclude<Category, "OTHER">, RegExp[]> = {
     /\bhorrible|awful|pathetic\b/, /\bno one (responded|answered|replied)\b/, /\bcharged twice\b/,
   ],
   WEDDING: [
-    /\bwedding\b/, /\bmarriage\b/, /\bsangeet\b/, /\bmehendi|mehndi\b/, /\breception\b/, /\bbride|groom\b/,
+    /\bwedding\b/, /\bmarriage\b/, /\bsangeet\b/, /\bmehendi|mehndi\b/, /\b(wedding|marriage) reception\b|\breception (party|dinner|for \d+)/, /\bbride|groom\b/,
     /\bhaldi\b/, /\bengagement\b/, /\bshaadi\b/, /\bmuhurtham?\b/,
   ],
   OFFSITE: [

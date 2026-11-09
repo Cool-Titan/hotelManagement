@@ -209,7 +209,8 @@ export async function triage(input: TriageInput, deps: { callModel?: ModelCall |
 
   if (!ai) {
     // Fallback: rule-based, low confidence, always reviewed by a human.
-    const category = keywords.category;
+    // Without the AI, any sign of an unhappy guest wins: complaints must never wait.
+    const category: Category = keywords.complaintSignal ? "COMPLAINT" : keywords.category;
     const draft = fallbackDraft(category, ruleExtract);
     return {
       category,

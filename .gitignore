@@ -44,3 +44,4 @@ next-env.d.ts
 Task.txt
 .env.test
 /src/generated/
+/.local-pg/
